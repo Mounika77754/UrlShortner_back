@@ -10,6 +10,8 @@ const urls=require("./model/urls.js");
 const validator=require("validator");
 const crypto=require("crypto");
 const auth=require("./middle/auth")
+const geoip = require("geoip-lite");
+const UAParser = require("ua-parser-js");
 const genCode=(ourl)=>{
     return crypto.randomBytes(4).toString("hex");
 }
@@ -107,6 +109,22 @@ app.get("/:shortCode",async (req,res)=>{
         const oUrl=await urls.findOne({shortCode:req.params.shortCode});
         if(oUrl){
             oUrl.clicks+=1;
+             const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    const geo = geoip.lookup(ip);
+    const parser = new UAParser(req.headers["user-agent"]);
+    const uaResult = parser.getResult();
+
+    oUrl.accessInfo.push({
+      ip,
+      country: geo ? geo.country : "Unknown",
+      device: uaResult.device.type || "Unknown",
+      browser: uaResult.browser.name || "Unknown",
+      accessedAt: new Date()
+    });
+    console.log("Short URL hit:", req.params.shortCode);
+console.log("User-Agent:", req.headers["user-agent"]);
+console.log("IP:", (req.headers['x-forwarded-for'] || req.socket.remoteAddress));
+
             await oUrl.save();
             res.redirect(oUrl.originalUrl)
         }else{

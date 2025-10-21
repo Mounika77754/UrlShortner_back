@@ -7,7 +7,16 @@ const urlSchema = new mongoose.Schema({
   originalUrl: { type: String, required: true },
   shortUrl: { type: String, required: true },
   shortCode: { type: String, required: true, unique: true },
-  clicks: { type: Number, default: 0 }
+  clicks: { type: Number, default: 0 },
+  accessInfo: [
+    {
+      ip: { type: String },
+      country: { type: String },
+      device: { type: String },
+      browser: { type: String },
+      accessedAt: { type: Date, default: Date.now }
+    }
+  ]
 }, { timestamps: true });
 
 const urls=mongoose.model("urls",urlSchema);
