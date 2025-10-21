@@ -89,12 +89,24 @@ app.post("/url",auth,async (req,res)=>{
     return res.status(404).json({message:"Invalid URL"})
    }
 })
-
+app.get("/urlinfo",auth,async (req,res)=>{
+    try{
+        const data=await urls.find({userId:req.user.id});
+        if(data){
+            return res.status(200).json(data);
+        }
+        else{
+            return res.status(404).json({message:"no data found"})
+        }
+    }catch(err){
+        return res.status(500).json({message:err.message})
+    }
+})
 app.get("/:shortCode",async (req,res)=>{
     try{
         const oUrl=await urls.findOne({shortCode:req.params.shortCode});
         if(oUrl){
-            oUrl.count+=1;
+            oUrl.clicks+=1;
             await oUrl.save();
             res.redirect(oUrl.originalUrl)
         }else{
@@ -104,4 +116,5 @@ app.get("/:shortCode",async (req,res)=>{
          res.status(500).json({message:err.message})
     }
 })
+
 app.listen(process.env.PORT,()=>(console.log("Listening on port 5000")))
