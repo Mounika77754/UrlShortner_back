@@ -68,7 +68,7 @@ app.post("/login",async (req,res)=>{
 })
 app.post("/url",auth,async (req,res)=>{
    const orUrl=req.body.originalUrl;
-   const exist=await urls.findOne({originalUrl:orUrl})
+   const exist=await urls.findOne({userId:req.user.id,originalUrl:orUrl})
    if(exist){
     return res.status(200).json({message:"done",shUrl:exist.shortUrl})
    }
