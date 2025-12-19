@@ -12,9 +12,6 @@ const crypto=require("crypto");
 const auth=require("./middle/auth")
 const geoip = require("geoip-lite");
 const UAParser = require("ua-parser-js");
-const genCode=(ourl)=>{
-    return crypto.randomBytes(4).toString("hex");
-}
 dotenv.config()
 app.use(express.json());
 app.use(cors());
@@ -68,19 +65,20 @@ app.post("/login",async (req,res)=>{
 })
 app.post("/url",auth,async (req,res)=>{
    const orUrl=req.body.originalUrl;
+   const shcode=req.body.shortCode;
    const exist=await urls.findOne({userId:req.user.id,originalUrl:orUrl})
    if(exist){
     return res.status(200).json({message:"done",shUrl:exist.shortUrl})
    }
    if(validator.isURL(orUrl,{require_protocol:true})){
          try{
-            const shortCode=genCode(orUrl);
-            const shUrl=`${req.protocol}://${req.get("host")}/${shortCode}`;
+            //const shortCode=genCode(orUrl);
+            const shUrl=`${req.protocol}://${req.get("host")}/${shcode}`;
             const newObj=new urls({
                 userId: req.user.id,
       originalUrl:orUrl,
       shortUrl:shUrl,
-      shortCode
+      shortCode:shcode
             })
             await newObj.save();
             return res.status(201).json({message:"done",shUrl});
